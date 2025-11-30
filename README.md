@@ -6,14 +6,11 @@ A C++ maze exploration game with riddles, built using SFML. Navigate the maze, s
 
 ## Files in This Folder
 
-* `game.cpp` – The main C++ source code.
-* `game.exe` – Precompiled executable (Windows).
+* `maze_updated.cpp` – The main C++ source code.
 * `leaderboard.txt` – Saves the top 10 completion times.
-* `maze.png` – Maze background or assets.
+* `player.png` – Screenshot of player on maze
+* `riddle.png` – Screenshot of riddles display
 * `README.md` – Project information.
-* 11 `.dll` files – Required SFML dynamic libraries for Windows.
-* `.gitignore` – Git ignore file.
-
 ---
 
 ## How to Run
@@ -30,25 +27,6 @@ A C++ maze exploration game with riddles, built using SFML. Navigate the maze, s
    * **ESC:** Exit or close riddle
    * **G:** Give up / trigger game over
    * **SPACE:** Start new game or replay
-
----
-
-## Notes for GitHub
-
-* **Do not** upload `game.exe` or `.dll` files to GitHub. They are binary files and can be downloaded separately if needed.
-* Only include source code (`.cpp`, `.h`), assets (`.png`, `.ttf`), and configuration files (`.txt`, `.md`, `.gitignore`).
-* Add the following to `.gitignore` to exclude binaries:
-
-```
-*.exe
-*.dll
-*.o
-*.obj
-*.pdb
-*.log
-```
-
-* Keep `leaderboard.txt` optional if you want a clean repo without user data.
 
 ---
 
