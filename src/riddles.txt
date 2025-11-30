@@ -1,3 +1,6 @@
+# Format: question|answer|difficulty|reward
+# difficulty: 0=easy,1=normal,2=hard
+# reward: VISION_REWARD | INVISIBILITY_REWARD | KILL_POWER_REWARD
 I follow you silently and vanish in light, what am I?|shadow|0|VISION_REWARD
 The more of me you take, the darker your path becomes. What am I?|darkness|0|INVISIBILITY_REWARD
 I can creep without legs, whisper without voice, and vanish when caught. What am I?|wind|1|VISION_REWARD
@@ -13,3 +16,4 @@ I enter your home unseen, linger, and leave only when you call me by name. What 
 I am light as a feather, yet the strongest man cannot hold me for long. What am I?|breath|1|INVISIBILITY_REWARD
 I have one eye but cannot see, I am feared by sailors on stormy seas. What am I?|needle|2|KILL_POWER_REWARD
 I am always in front of you, but can never be seen. What am I?|future|2|VISION_REWARD
+A sip that mends wounds and restores life. What am I?|potion|0|HEALTH_REWARD

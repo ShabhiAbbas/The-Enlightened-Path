@@ -12,7 +12,13 @@
 
 enum GameState { WELCOME, GENERATING, PLAYING, RIDDLE_ACTIVE, GAME_OVER, VICTORY, LEADERBOARD_VIEW };
 
-struct LeaderboardEntry { std::string name; float time; LeaderboardEntry() : name(""), time(0) {} LeaderboardEntry(std::string n, float t) : name(n), time(t) {} bool operator<(const LeaderboardEntry& other) const { return time < other.time; } };
+struct LeaderboardEntry { 
+    std::string name; 
+    float time; 
+    LeaderboardEntry() : name(""), time(0) {} 
+    LeaderboardEntry(std::string n, float t) : name(n), time(t) {} 
+    bool operator<(const LeaderboardEntry& other) const { return time < other.time; } 
+};
 
 class Game {
 private:
@@ -37,6 +43,12 @@ private:
     float elapsedTime;
     sf::Font gameFont;
     bool playerDeadThisFrame;
+
+    // --- NEW VARIABLES FOR WELCOME SCREEN ---
+    sf::Texture welcomeTexture;
+    sf::Sprite welcomeSprite;
+    std::string playerName; 
+    // ----------------------------------------
 
     void createRiddles();
     void spawnEnemies();

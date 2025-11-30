@@ -9,6 +9,20 @@
 
 Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlightened Path"), currentState(WELCOME), maze(nullptr), player(nullptr), currentRiddleIndex(-1), elapsedTime(0), playerDeadThisFrame(false) {
     window.setFramerateLimit(60);
+
+    // 1. Load Background Image
+    if(welcomeTexture.loadFromFile("Screenshots/welcome.jpg")) {
+        welcomeSprite.setTexture(welcomeTexture);
+        sf::Vector2u size = welcomeTexture.getSize();
+        welcomeSprite.setScale(1000.0f / size.x, 700.0f / size.y);
+    } else {
+        std::cout << "Warning: welcome.png not found.\n";
+    }
+
+    // 2. Initialize Name
+    playerName = "";
+
+    // 3. Load Fonts
     const char* fontCandidates[] = {
         "./fonts/arial.ttf",
         "./fonts/DejaVuSans.ttf",
@@ -29,6 +43,7 @@ Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlighten
     if(!fontLoaded) {
         std::cout << "Warning: Could not load any of the candidate fonts.\n";
     }
+
     loadScores();
     srand((unsigned)time(0));
 }
@@ -53,7 +68,6 @@ void Game::createRiddles() {
 
     std::vector<RiddleData> allRiddles;
 
-    // Attempt to open riddles.txt. If it doesn't exist, create a default one.
     std::ifstream rf("riddles.txt");
     if(!rf.is_open()) {
         std::ofstream wf("riddles.txt");
@@ -75,14 +89,13 @@ void Game::createRiddles() {
             wf << "I am always in front of you, but can never be seen. What am I?|future|2|VISION_REWARD\n";
             wf.close();
         }
-        // try opening again
         rf.open("riddles.txt");
     }
 
     std::string line;
     while(rf.is_open() && std::getline(rf, line)) {
         if(line.empty()) continue;
-        if(line.size() > 0 && line[0] == '#') continue; // allow comments
+        if(line.size() > 0 && line[0] == '#') continue; 
         std::vector<std::string> parts;
         size_t pos = 0;
         while(true) {
@@ -106,7 +119,6 @@ void Game::createRiddles() {
     }
     if(rf.is_open()) rf.close();
 
-    // Shuffle and pick up to 4 riddles (use std::shuffle)
     std::random_device rd;
     std::mt19937 rng(rd());
     std::shuffle(allRiddles.begin(), allRiddles.end(), rng);
@@ -129,15 +141,13 @@ void Game::spawnEnemies() {
     for(auto e : enemies) delete e;
     enemies.clear();
     
-    // Spawn 3-5 enemies at random locations away from start
     int numEnemies = 3 + rand() % 3;
     const float enemyDetection = 5.0f;
-    const int minDistance = static_cast<int>(enemyDetection) + 2; // ensure spawn sufficiently far
+    const int minDistance = static_cast<int>(enemyDetection) + 2; 
     int startX = player->getCellX();
     int startY = player->getCellY();
     for(int i = 0; i < numEnemies; ++i) {
         int ex, ey;
-        // Ensure enemy spawns away from player start and not on finish
         int attempts = 0;
         do {
             ex = rand() % COLS;
@@ -145,7 +155,6 @@ void Game::spawnEnemies() {
             ++attempts;
         } while(((abs(ex - startX) < minDistance) && (abs(ey - startY) < minDistance)) || (ex == maze->getFinishX() && ey == maze->getFinishY()) && attempts < 200);
         
-        // final check: if too close, push it further
         if((abs(ex - startX) < minDistance) && (abs(ey - startY) < minDistance)) {
             ex = std::min(COLS-1, startX + minDistance);
             ey = std::min(ROWS-1, startY + minDistance);
@@ -159,7 +168,6 @@ void Game::spawnEnemies() {
 void Game::updateEnemies() {
     for(auto e : enemies) {
         if(!e->dead()) {
-            // If player is in detection range and not invisible, chase
             if(e->isInDetectionRange(*player) && !player->getIsInvisible()) {
                 e->moveTowardPlayer(*player, COLS, ROWS, maze);
             }
@@ -175,13 +183,10 @@ void Game::checkEnemyCollisions() {
             int ex = static_cast<int>(e->getX());
             int ey = static_cast<int>(e->getY());
             
-            // Check if enemy and player are in same cell
             if(px == ex && py == ey) {
                 if(player->getCanKillEnemies()) {
-                    // Player kills the enemy
                     e->takeDamage(10.0f);
                 } else if(!player->getIsInvisible()) {
-                    // Enemy damages player
                     player->takeDamage(1.0f);
                 }
             }
@@ -197,14 +202,12 @@ void Game::checkBulletCollisions() {
         int bx = static_cast<int>(bullets[i].x);
         int by = static_cast<int>(bullets[i].y);
         
-        // Check if bullet hits any enemy
         for(auto e : enemies) {
             if(!e->dead()) {
                 int ex = static_cast<int>(e->getX());
                 int ey = static_cast<int>(e->getY());
                 
                 if(bx == ex && by == ey) {
-                    // Bullet hits enemy
                     e->takeDamage(10.0f);
                     bullets[i].active = false;
                     break;
@@ -212,8 +215,6 @@ void Game::checkBulletCollisions() {
             }
         }
     }
-    
-    // Remove inactive bullets (handled in Player::updateBullets)
 }
 
 void Game::loadScores() {
@@ -256,21 +257,43 @@ void Game::checkForRiddle() {
 }
 
 void Game::showWelcomeScreen() {
-    window.clear(sf::Color(20, 20, 35));
+    // 1. Draw the Background Image
+    window.draw(welcomeSprite);
+
+    // 2. Overlay
+    sf::RectangleShape overlay(sf::Vector2f(600, 400));
+    overlay.setPosition(WINDOW_WIDTH/2 - 300, 150);
+    overlay.setFillColor(sf::Color(0, 0, 0, 150)); 
+    window.draw(overlay);
+
     sf::Text title("THE ENLIGHTENED PATH", gameFont, 50);
-    title.setPosition(WINDOW_WIDTH / 2 - 300, 150);
+    title.setPosition(WINDOW_WIDTH / 2 - 300, 170);
     title.setFillColor(sf::Color(200, 200, 220)); 
     title.setStyle(sf::Text::Bold);
     window.draw(title);
     
-    sf::Text subtitle("Knowledge is your light...", gameFont, 25);
-    subtitle.setPosition(WINDOW_WIDTH / 2 - 180, 220); 
-    subtitle.setFillColor(sf::Color(150, 150, 170)); 
-    subtitle.setStyle(sf::Text::Italic);
-    window.draw(subtitle);
-    
-    sf::Text instructions("Press SPACE to Start\nPress L for Leaderboard\nPress ESC to Exit", gameFont, 20);
-    instructions.setPosition(WINDOW_WIDTH / 2 - 150, 350); 
+    // Instructions for Name
+    sf::Text namePrompt("Enter your name:", gameFont, 25);
+    namePrompt.setPosition(WINDOW_WIDTH / 2 - 100, 280);
+    namePrompt.setFillColor(sf::Color(255, 255, 255));
+    window.draw(namePrompt);
+
+    // Draw the Player's Input Name
+    sf::RectangleShape nameBox(sf::Vector2f(300, 40));
+    nameBox.setPosition(WINDOW_WIDTH / 2 - 150, 320);
+    nameBox.setFillColor(sf::Color(50, 50, 50));
+    nameBox.setOutlineColor(sf::Color::White);
+    nameBox.setOutlineThickness(2);
+    window.draw(nameBox);
+
+    sf::Text nameDisplay(playerName + "_", gameFont, 25);
+    nameDisplay.setPosition(WINDOW_WIDTH / 2 - 140, 325);
+    nameDisplay.setFillColor(sf::Color::Yellow);
+    window.draw(nameDisplay);
+
+    // CHANGED: "Press L" is now "Press TAB"
+    sf::Text instructions("Press ENTER to Start\nPress TAB for Leaderboard\nPress ESC to Exit", gameFont, 20);
+    instructions.setPosition(WINDOW_WIDTH / 2 - 120, 450); 
     instructions.setFillColor(sf::Color(180, 180, 200)); 
     window.draw(instructions);
 }
@@ -404,12 +427,9 @@ void Game::showGameInfo() {
 }
 
 void Game::showHealthBar() {
-    // Draw health bar at bottom-left of maze
-    // Bar width: 250px, height: 20px
     int barX = 20;
     int barY = MAZE_HEIGHT + 20;
     
-    // Draw health bar background
     sf::RectangleShape healthBarBg(sf::Vector2f(250, 30));
     healthBarBg.setPosition(barX, barY);
     healthBarBg.setFillColor(sf::Color(50, 50, 50));
@@ -417,24 +437,21 @@ void Game::showHealthBar() {
     healthBarBg.setOutlineThickness(2);
     window.draw(healthBarBg);
     
-    // Draw health bar fill
     float healthPercent = player->getHealth() / player->getMaxHealth();
     sf::RectangleShape healthBarFill(sf::Vector2f(250 * healthPercent, 30));
     healthBarFill.setPosition(barX, barY);
     
-    // Color based on death count: 0 deaths=green, 1 death=yellow, 2+ deaths=red
     int deathCount = player->getDeathCount();
     if(deathCount == 0) {
-        healthBarFill.setFillColor(sf::Color(0, 255, 0)); // Green - first life
+        healthBarFill.setFillColor(sf::Color(0, 255, 0)); 
     } else if(deathCount == 1) {
-        healthBarFill.setFillColor(sf::Color(255, 255, 0)); // Yellow - second life
+        healthBarFill.setFillColor(sf::Color(255, 255, 0)); 
     } else {
-        healthBarFill.setFillColor(sf::Color(255, 0, 0)); // Red - third life (final)
+        healthBarFill.setFillColor(sf::Color(255, 0, 0)); 
     }
     
     window.draw(healthBarFill);
     
-    // Draw health label and death count
     std::stringstream healthText;
     healthText << "HP: " << (int)player->getHealth() << "/3 | Deaths: " << deathCount << "/2";
     sf::Text healthLabel(healthText.str(), gameFont, 14);
@@ -496,13 +513,24 @@ void Game::handleInput() {
     sf::Event event;
     while(window.pollEvent(event)) {
         if(event.type == sf::Event::Closed) window.close();
+        
+        // --- Key Pressed Events ---
         if(event.type == sf::Event::KeyPressed) {
+            
+            // 1. WELCOME SCREEN
             if(currentState == WELCOME) {
-                if(event.key.code == sf::Keyboard::Space) startNewGame();
-                else if(event.key.code == sf::Keyboard::L) currentState = LEADERBOARD_VIEW;
+                if(event.key.code == sf::Keyboard::Enter && !playerName.empty()) {
+                    startNewGame();
+                }
+                // CHANGED: Use TAB instead of L for Leaderboard
+                else if(event.key.code == sf::Keyboard::Tab) currentState = LEADERBOARD_VIEW;
                 else if(event.key.code == sf::Keyboard::Escape) window.close();
+            
+            // 2. LEADERBOARD SCREEN
             } else if(currentState == LEADERBOARD_VIEW) {
                 if(event.key.code == sf::Keyboard::Escape) currentState = WELCOME;
+            
+            // 3. PLAYING GAME
             } else if(currentState == PLAYING) {
                 int moveX = 0, moveY = 0;
                 if(event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up) moveY = -1;
@@ -518,12 +546,16 @@ void Game::handleInput() {
                         player->move(moveX, moveY); 
                         checkForRiddle(); 
                         bool reachedExit = (player->getCellX() == maze->getFinishX() && player->getCellY() == maze->getFinishY()); 
+                        
+                        // WIN CONDITION
                         if(reachedExit) { 
                             currentState = VICTORY; 
-                            addScore("Player", elapsedTime); 
+                            addScore(playerName, elapsedTime); 
                         }
                     }
                 }
+            
+            // 4. RIDDLE ACTIVE
             } else if(currentState == RIDDLE_ACTIVE) {
                 if(event.key.code == sf::Keyboard::Escape) currentState = PLAYING;
                 else if(event.key.code == sf::Keyboard::Enter) {
@@ -534,7 +566,6 @@ void Game::handleInput() {
                     if(validIndex && correctAnswer) { 
                         riddles[currentRiddleIndex]->setSolved(true);
                         
-                        // Apply riddle reward based on type
                         RiddleRewardType rewardType = riddles[currentRiddleIndex]->getRewardType();
                         if(rewardType == VISION_REWARD) {
                             player->increaseVision(riddles[currentRiddleIndex]->getReward());
@@ -542,7 +573,7 @@ void Game::handleInput() {
                             player->setInvisible(true);
                         } else if(rewardType == KILL_POWER_REWARD) {
                             player->setCanKillEnemies(true);
-                            player->addAmmo(6);  // Grant 6 bullets
+                            player->addAmmo(6);  
                         } else if(rewardType == HEALTH_REWARD) {
                             player->increaseHealth(riddles[currentRiddleIndex]->getReward());
                         }
@@ -551,15 +582,35 @@ void Game::handleInput() {
                     }
                     playerAnswer.clear();
                 } else if(event.key.code == sf::Keyboard::Backspace && !playerAnswer.empty()) playerAnswer.pop_back();
+            
+            // 5. VICTORY / GAME OVER
             } else if(currentState == VICTORY || currentState == GAME_OVER) {
                 if(event.key.code == sf::Keyboard::Space) startNewGame();
                 else if(event.key.code == sf::Keyboard::Escape) currentState = WELCOME;
             }
         }
-        if(event.type == sf::Event::TextEntered && currentState == RIDDLE_ACTIVE) {
-            bool isPrintable = (event.text.unicode < 128 && event.text.unicode >= 32);
-            bool notTooLong = (playerAnswer.length() < 30);
-            if(isPrintable && notTooLong) playerAnswer += static_cast<char>(event.text.unicode);
+        
+        // --- Text Entry Events ---
+        if(event.type == sf::Event::TextEntered) {
+            // Logic for Riddle Input
+            if (currentState == RIDDLE_ACTIVE) {
+                bool isPrintable = (event.text.unicode < 128 && event.text.unicode >= 32);
+                bool notTooLong = (playerAnswer.length() < 30);
+                if(isPrintable && notTooLong) playerAnswer += static_cast<char>(event.text.unicode);
+                else if (event.text.unicode == 8 && !playerAnswer.empty()) playerAnswer.pop_back(); // Backspace
+            }
+            // Logic for Welcome Screen Name Input
+            else if (currentState == WELCOME) {
+                bool isPrintable = (event.text.unicode < 128 && event.text.unicode >= 32);
+                bool notTooLong = (playerName.length() < 15); 
+                
+                if(isPrintable && notTooLong) {
+                    playerName += static_cast<char>(event.text.unicode);
+                }
+                else if (event.text.unicode == 8 && !playerName.empty()) { 
+                    playerName.pop_back(); 
+                }
+            }
         }
     }
 }
@@ -582,16 +633,11 @@ void Game::updateGame() {
         checkEnemyCollisions();
         checkBulletCollisions();
         
-        // Check if player died
         if(player->getHealth() <= 0) {
-            // If player has respawns left (< 2 deaths)
             if(player->getDeathCount() < 2) {
-                // Respawn player at start location
                 player->respawn();
-                // Respawn all enemies
                 spawnEnemies();
             } else {
-                // Final death - game over
                 currentState = GAME_OVER;
             }
         }
@@ -610,7 +656,6 @@ void Game::draw() {
         
         maze->drawWithVision(window, *player);
         
-        // Draw all enemies
         for(const auto& e : enemies) {
             bool canSeeEnemy = player->isInVision(e->getX(), e->getY());
             if(canSeeEnemy) e->draw(window);

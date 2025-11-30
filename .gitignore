@@ -10,3 +10,4 @@
 *.obj
 .DS_Store
 Thumbs.db
+!riddles.txt
