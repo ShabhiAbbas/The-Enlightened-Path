@@ -1,7 +1,5 @@
 #include "Cell.h"
 
-// A single grid cell that knows which of its four walls are present,
-// whether it has been visited by the maze generator, and how to draw itself.
 
 Cell::Cell() : x(0), y(0), visited(false) { for(int i = 0; i < 4; ++i) walls[i] = true; }
 Cell::Cell(int x_, int y_) : x(x_), y(y_), visited(false) { for(int i = 0; i < 4; ++i) walls[i] = true; }
@@ -9,7 +7,6 @@ Cell::Cell(int x_, int y_) : x(x_), y(y_), visited(false) { for(int i = 0; i < 4
 void Cell::draw(sf::RenderWindow& window, int cellSize, bool isStart, bool isFinish) const {
     int px = x * cellSize;
     int py = y * cellSize;
-    // If visited, fill the cell background so paths are visible
     if (visited) {
         sf::RectangleShape bg(sf::Vector2f(cellSize, cellSize));
         bg.setPosition(px, py);
@@ -19,7 +16,6 @@ void Cell::draw(sf::RenderWindow& window, int cellSize, bool isStart, bool isFin
         window.draw(bg);
     }
 
-    // Draw the four walls if present (top, right, bottom, left)
     sf::Color wallColor(200, 200, 220);
     if (walls[0]) { sf::RectangleShape wall(sf::Vector2f(cellSize, 2)); wall.setPosition(px, py); wall.setFillColor(wallColor); window.draw(wall); }
     if (walls[1]) { sf::RectangleShape wall(sf::Vector2f(2, cellSize)); wall.setPosition(px + cellSize, py); wall.setFillColor(wallColor); window.draw(wall); }

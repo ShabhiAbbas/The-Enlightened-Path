@@ -7,6 +7,22 @@
 // removes walls between neighboring cells to create a perfect maze.
 
 Maze::Maze(int cols_, int rows_, int cellSize_) : cols(cols_), rows(rows_), cellSize(cellSize_), generating(true), startX(0), startY(0), finishX(cols_ - 1), finishY(rows_ - 1) {
+    // Randomize endpoint location: choose from top-right, bottom-left, or bottom-right
+    int cornerChoice = rand() % 3;
+    if(cornerChoice == 0) {
+        // Top-right
+        finishX = cols_ - 1;
+        finishY = 0;
+    } else if(cornerChoice == 1) {
+        // Bottom-left
+        finishX = 0;
+        finishY = rows_ - 1;
+    } else {
+        // Bottom-right (default)
+        finishX = cols_ - 1;
+        finishY = rows_ - 1;
+    }
+    
     grid.resize(rows);
     for(int y = 0; y < rows; ++y) {
         grid[y].resize(cols);

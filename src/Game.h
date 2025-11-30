@@ -4,6 +4,8 @@
 #include "Maze.h"
 #include "Player.h"
 #include "Riddle.h"
+#include "Enemy.h"
+#include "GameObject.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
@@ -27,14 +29,20 @@ private:
     Maze* maze;
     Player* player;
     std::vector<Riddle*> riddles;
+    std::vector<Enemy*> enemies;
     std::vector<LeaderboardEntry> leaderboard;
     int currentRiddleIndex;
     std::string playerAnswer;
     sf::Clock timer;
     float elapsedTime;
     sf::Font gameFont;
+    bool playerDeadThisFrame;
 
     void createRiddles();
+    void spawnEnemies();
+    void updateEnemies();
+    void checkEnemyCollisions();
+    void checkBulletCollisions();
     void loadScores();
     void saveScores();
     void addScore(const std::string& name, float time);
@@ -44,6 +52,7 @@ private:
     void showMiniLeaderboard();
     void showRiddleBox();
     void showGameInfo();
+    void showHealthBar();
     void showRiddleMarkers();
     void showVictoryScreen();
     void showGameOverScreen();

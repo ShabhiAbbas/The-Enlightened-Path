@@ -1,4 +1,6 @@
 #include "GameObject.h"
+#include "Player.h"
+#include <cmath>
 
 // Simple base implementation for game objects and movable entities.
 // GameObject stores position and provides overridable update/draw hooks.
