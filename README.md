@@ -1,57 +1,64 @@
-# Maze Generation using Recursive Backtracking (C++ & SFML)
+# The Enlightened Path
 
-This repository contains a C++ implementation of a 2D maze generator using the **recursive backtracking algorithm**, built with **SFML 2.5.x** for rendering.
-
-This code is part of the development process for our larger OOP project *“The Enlightened Path”*, where this maze will later be integrated into a complete game environment.
+A C++ maze exploration game with riddles, built using SFML. Navigate the maze, solve riddles, and increase your vision to find the exit!
 
 ---
 
-## 🧩 Features
+## Files in This Folder
 
-- 2D maze stored in a grid / 2D array  
-- Recursive Backtracking algorithm  
-- Randomized maze generation for different layouts every run  
-- Uses SFML to visually display the maze  
-- Clean C++ implementation  
-
----
-
-## 📁 Files in This Repository
-
-| File | Description |
-|------|-------------|
-| `maze.cpp` | The main implementation of the maze generator (SFML + recursive backtracking). |
-
-> **Note:** SFML itself is *not included* in this repository to keep it lightweight.  
-You must install SFML separately (instructions below).
+* `game.cpp` – The main C++ source code.
+* `game.exe` – Precompiled executable (Windows).
+* `leaderboard.txt` – Saves the top 10 completion times.
+* `maze.png` – Maze background or assets.
+* `README.md` – Project information.
+* 11 `.dll` files – Required SFML dynamic libraries for Windows.
+* `.gitignore` – Git ignore file.
 
 ---
 
-## 🔧 How to Compile (Windows, using g++)
+## How to Run
 
-This program uses **SFML 2.5.x**, so make sure SFML is installed.
+1. Ensure all `.dll` files are in the same folder as `game.exe`.
+2. Double-click `game.exe` to start the game.
+3. Controls:
 
-### **1. Download SFML**
-Download from the official website:  
-https://www.sfml-dev.org/download.php
-
-Extract the SFML folder anywhere on your system.
-
----
-
-### **2. Copy SFML DLLs**
-Inside the SFML folder:
-
-1. Go to: `SFML/bin/`  
-2. Copy all `.dll` files  
-3. Paste them into the same folder where your compiled executable (`.exe`) will be created  
-
-This ensures the program can find SFML libraries at runtime.
+   * **W / Up Arrow:** Move Up
+   * **S / Down Arrow:** Move Down
+   * **A / Left Arrow:** Move Left
+   * **D / Right Arrow:** Move Right
+   * **ENTER:** Submit riddle answer
+   * **ESC:** Exit or close riddle
+   * **G:** Give up / trigger game over
+   * **SPACE:** Start new game or replay
 
 ---
 
-### **3. Ignore IDE warnings**
-If your editor shows a squiggly line under:
+## Notes for GitHub
 
-```cpp
-#include <SFML/Graphics.hpp>
+* **Do not** upload `game.exe` or `.dll` files to GitHub. They are binary files and can be downloaded separately if needed.
+* Only include source code (`.cpp`, `.h`), assets (`.png`, `.ttf`), and configuration files (`.txt`, `.md`, `.gitignore`).
+* Add the following to `.gitignore` to exclude binaries:
+
+```
+*.exe
+*.dll
+*.o
+*.obj
+*.pdb
+*.log
+```
+
+* Keep `leaderboard.txt` optional if you want a clean repo without user data.
+
+---
+
+## License
+
+Open-source. You can fork and modify it as needed.
+
+---
+
+## Acknowledgements
+
+* [SFML](https://www.sfml-dev.org/) for graphics, window, and system handling.
+* Inspired by classic maze and puzzle games.
