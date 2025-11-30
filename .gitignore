@@ -1,0 +1,12 @@
+
+*.dll
+*.lib
+*.a
+*.so
+*.dylib
+/build/
+*.exe
+*.o
+*.obj
+.DS_Store
+Thumbs.db
