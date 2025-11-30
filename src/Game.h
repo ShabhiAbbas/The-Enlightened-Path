@@ -44,11 +44,17 @@ private:
     sf::Font gameFont;
     bool playerDeadThisFrame;
 
-    // --- NEW VARIABLES FOR WELCOME SCREEN ---
+    // --- BACKGROUNDS ---
     sf::Texture welcomeTexture;
     sf::Sprite welcomeSprite;
-    std::string playerName; 
-    // ----------------------------------------
+    
+    // NEW: Game Over Background
+    sf::Texture gameOverTexture;
+    sf::Sprite gameOverSprite;
+
+    std::string playerName;
+    GameState previousState;
+    // -------------------
 
     void createRiddles();
     void spawnEnemies();

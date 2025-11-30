@@ -17,3 +17,9 @@ I am light as a feather, yet the strongest man cannot hold me for long. What am 
 I have one eye but cannot see, I am feared by sailors on stormy seas. What am I?|needle|2|KILL_POWER_REWARD
 I am always in front of you, but can never be seen. What am I?|future|2|VISION_REWARD
 A sip that mends wounds and restores life. What am I?|potion|0|HEALTH_REWARD
+I can be cracked, made, told, and played. What am I?|joke|0|INVISIBILITY_REWARD
+I don't have a mouth, and I can drown. What am I?|fire|2|KILL_POWER_REWARD
+I have cities, but no houses; forests, but no trees; and rivers, but no water. What am I?|map|1|VISION_REWARD
+I am taken from a mine and shut in a wooden case, from which I am never released, and yet I am used by almost every person. What am I?|pencil lead|1|INVISIBILITY_REWARD
+I can fly without wings, cry without eyes. Wherever I go, darkness follows me. What am I?|cloud|1|VISION_REWARD
+I am not alive, but I grow; I don't have lungs, but I need air; I don't have a mouth, and I can drown. What am I?|fire|2|KILL_POWER_REWARD

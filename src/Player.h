@@ -5,6 +5,16 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
+// Game-wide small constants to avoid magic numbers scattered around code.
+// Placed here so both Game and Player can reference them easily.
+namespace GameConstants {
+    // How long (seconds) invisibility from a riddle lasts
+    constexpr float INVISIBILITY_DURATION = 60.0f;
+
+    // How much ammo a KILL_POWER_REWARD gives
+    constexpr int KILL_POWER_AMMO_REWARD = 10;
+}
+
 struct Bullet {
     float x, y;
     int dirX, dirY;  // Direction: -1, 0, or 1
@@ -20,6 +30,14 @@ private:
     int cellSize;
     float visionRadius;
     sf::Clock animClock;
+    
+    // NEW: Damage cooldown timer (prevents rapid repeated damage)
+    sf::Clock damageCooldown;
+
+    // NEW: Invisibility timer - started when invisibility is granted
+    sf::Clock invisibilityClock;
+
+    // Player health and related state
     float health;
     float maxHealth;
     bool isInvisible;

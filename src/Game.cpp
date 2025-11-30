@@ -6,12 +6,13 @@
 #include <cstdlib>
 #include <iostream>
 #include <random>
+#include <unordered_map>
 
-Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlightened Path"), currentState(WELCOME), maze(nullptr), player(nullptr), currentRiddleIndex(-1), elapsedTime(0), playerDeadThisFrame(false) {
+Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlightened Path"), currentState(WELCOME), maze(nullptr), player(nullptr), currentRiddleIndex(-1), elapsedTime(0), playerDeadThisFrame(false), previousState(WELCOME) {
     window.setFramerateLimit(60);
 
-    // 1. Load Background Image
-    if(welcomeTexture.loadFromFile("Screenshots/welcome.jpg")) {
+    // 1. Load Welcome Background
+    if(welcomeTexture.loadFromFile("Images/welcome.jpg")) {
         welcomeSprite.setTexture(welcomeTexture);
         sf::Vector2u size = welcomeTexture.getSize();
         welcomeSprite.setScale(1000.0f / size.x, 700.0f / size.y);
@@ -19,10 +20,19 @@ Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlighten
         std::cout << "Warning: welcome.png not found.\n";
     }
 
-    // 2. Initialize Name
+    // 2. NEW: Load Game Over Background
+    if(gameOverTexture.loadFromFile("Images/gameover.jpg")) {
+        gameOverSprite.setTexture(gameOverTexture);
+        sf::Vector2u size = gameOverTexture.getSize();
+        gameOverSprite.setScale(1000.0f / size.x, 700.0f / size.y);
+    } else {
+        std::cout << "Warning: gameover.jpg not found.\n";
+    }
+
+    // 3. Initialize Name
     playerName = "";
 
-    // 3. Load Fonts
+    // 4. Load Fonts
     const char* fontCandidates[] = {
         "./fonts/arial.ttf",
         "./fonts/DejaVuSans.ttf",
@@ -68,7 +78,7 @@ void Game::createRiddles() {
 
     std::vector<RiddleData> allRiddles;
 
-    std::ifstream rf("riddles.txt");
+    std::ifstream rf("src/riddles.txt");
     if(!rf.is_open()) {
         std::ofstream wf("riddles.txt");
         if(wf.is_open()) {
@@ -122,7 +132,7 @@ void Game::createRiddles() {
     std::random_device rd;
     std::mt19937 rng(rd());
     std::shuffle(allRiddles.begin(), allRiddles.end(), rng);
-    int choose = std::min(4, (int)allRiddles.size());
+    int choose = std::min(10, (int)allRiddles.size());
     for(int i = 0; i < choose; ++i) {
         int posX = rand() % (COLS - 4) + 2;
         int posY = rand() % (ROWS - 4) + 2;
@@ -188,6 +198,16 @@ void Game::checkEnemyCollisions() {
                     e->takeDamage(10.0f);
                 } else if(!player->getIsInvisible()) {
                     player->takeDamage(1.0f);
+                    // NEW: Kill the enemy that hit you and respawn it randomly
+                    e->takeDamage(10.0f);
+                    int newX, newY;
+                    int attempts = 0;
+                    do {
+                        newX = rand() % COLS;
+                        newY = rand() % ROWS;
+                        ++attempts;
+                    } while((newX == maze->getFinishX() && newY == maze->getFinishY()) && attempts < 100);
+                    e->setPosition(static_cast<float>(newX), static_cast<float>(newY));
                 }
             }
         }
@@ -219,11 +239,18 @@ void Game::checkBulletCollisions() {
 
 void Game::loadScores() {
     leaderboard.clear();
+    // Read leaderboard and keep only the best (lowest) time per player
     std::ifstream file("leaderboard.txt");
     if(file.is_open()) {
-        std::string name; float timev;
-        while(file >> name >> timev) leaderboard.push_back(LeaderboardEntry(name, timev));
+        std::string name;
+        float timev;
+        std::unordered_map<std::string, float> bestTimes;
+        while(file >> name >> timev) {
+            auto it = bestTimes.find(name);
+            if(it == bestTimes.end() || timev < it->second) bestTimes[name] = timev;
+        }
         file.close();
+        for(const auto &p : bestTimes) leaderboard.push_back(LeaderboardEntry(p.first, p.second));
     }
     std::sort(leaderboard.begin(), leaderboard.end());
 }
@@ -237,7 +264,20 @@ void Game::saveScores() {
 }
 
 void Game::addScore(const std::string& name, float time) {
-    leaderboard.push_back(LeaderboardEntry(name, time));
+    // If the player already exists, keep the best (lowest) time only
+    bool updated = false;
+    for(auto &e : leaderboard) {
+        if(e.name == name) {
+            if(time < e.time) {
+                e.time = time; // improve existing score
+            }
+            updated = true;
+            break;
+        }
+    }
+    if(!updated) {
+        leaderboard.push_back(LeaderboardEntry(name, time));
+    }
     std::sort(leaderboard.begin(), leaderboard.end());
     if(leaderboard.size() > 10) leaderboard.resize(10);
     saveScores();
@@ -257,10 +297,8 @@ void Game::checkForRiddle() {
 }
 
 void Game::showWelcomeScreen() {
-    // 1. Draw the Background Image
     window.draw(welcomeSprite);
 
-    // 2. Overlay
     sf::RectangleShape overlay(sf::Vector2f(600, 400));
     overlay.setPosition(WINDOW_WIDTH/2 - 300, 150);
     overlay.setFillColor(sf::Color(0, 0, 0, 150)); 
@@ -272,13 +310,11 @@ void Game::showWelcomeScreen() {
     title.setStyle(sf::Text::Bold);
     window.draw(title);
     
-    // Instructions for Name
     sf::Text namePrompt("Enter your name:", gameFont, 25);
     namePrompt.setPosition(WINDOW_WIDTH / 2 - 100, 280);
     namePrompt.setFillColor(sf::Color(255, 255, 255));
     window.draw(namePrompt);
 
-    // Draw the Player's Input Name
     sf::RectangleShape nameBox(sf::Vector2f(300, 40));
     nameBox.setPosition(WINDOW_WIDTH / 2 - 150, 320);
     nameBox.setFillColor(sf::Color(50, 50, 50));
@@ -291,7 +327,6 @@ void Game::showWelcomeScreen() {
     nameDisplay.setFillColor(sf::Color::Yellow);
     window.draw(nameDisplay);
 
-    // CHANGED: "Press L" is now "Press TAB"
     sf::Text instructions("Press ENTER to Start\nPress TAB for Leaderboard\nPress ESC to Exit", gameFont, 20);
     instructions.setPosition(WINDOW_WIDTH / 2 - 120, 450); 
     instructions.setFillColor(sf::Color(180, 180, 200)); 
@@ -363,12 +398,25 @@ void Game::showRiddleBox() {
         question.setFillColor(sf::Color(255, 255, 255)); 
         window.draw(question);
         
-        std::stringstream rewardText; 
+        std::stringstream rewardText;
         RiddleRewardType rt = activeRiddle->getRewardType();
-        if(rt == VISION_REWARD) rewardText << "Reward: +" << activeRiddle->getReward() << " vision";
-        else if(rt == INVISIBILITY_REWARD) rewardText << "Reward: Invisibility";
-        else if(rt == KILL_POWER_REWARD) rewardText << "Reward: Kill Power";
-        else if(rt == HEALTH_REWARD) rewardText << "Reward: +" << activeRiddle->getReward() << " health";
+
+        if (rt == VISION_REWARD) {
+            rewardText << "Reward: +" << activeRiddle->getReward()
+                       << " vision";
+
+        } else if (rt == INVISIBILITY_REWARD) {
+            rewardText << "Reward: Invisibility";
+
+        } else if (rt == KILL_POWER_REWARD) {
+            rewardText << "Reward: Kill Power + "
+                       << GameConstants::KILL_POWER_AMMO_REWARD
+                       << " Ammo";
+
+        } else if (rt == HEALTH_REWARD) {
+            rewardText << "Reward: +" << activeRiddle->getReward()
+                       << " health";
+        }
         sf::Text reward(rewardText.str(), gameFont, 14); 
         reward.setPosition(40, MAZE_HEIGHT + 60); 
         reward.setFillColor(sf::Color(150, 255, 150)); 
@@ -441,10 +489,9 @@ void Game::showHealthBar() {
     sf::RectangleShape healthBarFill(sf::Vector2f(250 * healthPercent, 30));
     healthBarFill.setPosition(barX, barY);
     
-    int deathCount = player->getDeathCount();
-    if(deathCount == 0) {
+    if(player->getHealth() > 2.0f) {
         healthBarFill.setFillColor(sf::Color(0, 255, 0)); 
-    } else if(deathCount == 1) {
+    } else if(player->getHealth() > 1.0f) {
         healthBarFill.setFillColor(sf::Color(255, 255, 0)); 
     } else {
         healthBarFill.setFillColor(sf::Color(255, 0, 0)); 
@@ -453,7 +500,7 @@ void Game::showHealthBar() {
     window.draw(healthBarFill);
     
     std::stringstream healthText;
-    healthText << "HP: " << (int)player->getHealth() << "/3 | Deaths: " << deathCount << "/2";
+    healthText << "HP: " << (int)player->getHealth() << "/" << (int)player->getMaxHealth();
     sf::Text healthLabel(healthText.str(), gameFont, 14);
     healthLabel.setPosition(barX + 10, barY + 6);
     healthLabel.setFillColor(sf::Color(255, 255, 255));
@@ -488,12 +535,9 @@ void Game::showVictoryScreen() {
 }
 
 void Game::showGameOverScreen() {
-    window.clear(sf::Color(40, 20, 20));
-    sf::Text title("GAME OVER", gameFont, 60); 
-    title.setPosition(WINDOW_WIDTH / 2 - 200, 150); 
-    title.setFillColor(sf::Color(255, 100, 100)); 
-    window.draw(title);
-    
+    // NEW: Draw Background
+    window.draw(gameOverSprite);
+
     sf::Text instructions("Press SPACE to try again\nPress ESC to exit", gameFont, 20); 
     instructions.setPosition(WINDOW_WIDTH / 2 - 150, 350); 
     instructions.setFillColor(sf::Color(200, 200, 200)); 
@@ -522,7 +566,6 @@ void Game::handleInput() {
                 if(event.key.code == sf::Keyboard::Enter && !playerName.empty()) {
                     startNewGame();
                 }
-                // CHANGED: Use TAB instead of L for Leaderboard
                 else if(event.key.code == sf::Keyboard::Tab) currentState = LEADERBOARD_VIEW;
                 else if(event.key.code == sf::Keyboard::Escape) window.close();
             
@@ -566,16 +609,30 @@ void Game::handleInput() {
                     if(validIndex && correctAnswer) { 
                         riddles[currentRiddleIndex]->setSolved(true);
                         
-                        RiddleRewardType rewardType = riddles[currentRiddleIndex]->getRewardType();
-                        if(rewardType == VISION_REWARD) {
-                            player->increaseVision(riddles[currentRiddleIndex]->getReward());
-                        } else if(rewardType == INVISIBILITY_REWARD) {
+                        // Apply riddle reward to player. Keep cases small and
+                        // explicit so behavior is clear.
+                        RiddleRewardType rewardType =
+                            riddles[currentRiddleIndex]->getRewardType();
+
+                        if (rewardType == VISION_REWARD) {
+                            player->increaseVision(
+                                riddles[currentRiddleIndex]->getReward());
+
+                        } else if (rewardType == INVISIBILITY_REWARD) {
+                            // Grant temporary invisibility (duration governed
+                            // by GameConstants::INVISIBILITY_DURATION).
                             player->setInvisible(true);
-                        } else if(rewardType == KILL_POWER_REWARD) {
+
+                        } else if (rewardType == KILL_POWER_REWARD) {
+                            // Give kill power and ammo. Ammo amount is a named
+                            // constant to avoid scattering magic numbers.
                             player->setCanKillEnemies(true);
-                            player->addAmmo(6);  
-                        } else if(rewardType == HEALTH_REWARD) {
-                            player->increaseHealth(riddles[currentRiddleIndex]->getReward());
+                            player->addAmmo(
+                                GameConstants::KILL_POWER_AMMO_REWARD);
+
+                        } else if (rewardType == HEALTH_REWARD) {
+                            player->increaseHealth(
+                                riddles[currentRiddleIndex]->getReward());
                         }
                         
                         currentState = PLAYING; 
@@ -633,13 +690,10 @@ void Game::updateGame() {
         checkEnemyCollisions();
         checkBulletCollisions();
         
+        // FIXED: Immediately trigger Game Over if health is 0.
+        // Removed the respawn/deathCount logic that was resetting health.
         if(player->getHealth() <= 0) {
-            if(player->getDeathCount() < 2) {
-                player->respawn();
-                spawnEnemies();
-            } else {
-                currentState = GAME_OVER;
-            }
+            currentState = GAME_OVER;
         }
     }
 }
