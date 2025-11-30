@@ -1,4 +1,4 @@
-# The Enlightened Path (only_maze)
+# The Enlightened Path
 
 ## Short description
 
