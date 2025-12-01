@@ -7,6 +7,7 @@
 #include "Enemy.h"
 #include "GameObject.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <vector>
 #include <string>
 
@@ -44,17 +45,17 @@ private:
     sf::Font gameFont;
     bool playerDeadThisFrame;
 
-    // --- BACKGROUNDS ---
+
+    sf::Music bgMusic; 
+   
     sf::Texture welcomeTexture;
     sf::Sprite welcomeSprite;
     
-    // NEW: Game Over Background
     sf::Texture gameOverTexture;
     sf::Sprite gameOverSprite;
 
     std::string playerName;
     GameState previousState;
-    // -------------------
 
     void createRiddles();
     void spawnEnemies();

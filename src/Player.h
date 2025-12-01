@@ -9,7 +9,7 @@
 // Placed here so both Game and Player can reference them easily.
 namespace GameConstants {
     // How long (seconds) invisibility from a riddle lasts
-    constexpr float INVISIBILITY_DURATION = 60.0f;
+    constexpr float INVISIBILITY_DURATION = 10.0f;
 
     // How much ammo a KILL_POWER_REWARD gives
     constexpr int KILL_POWER_AMMO_REWARD = 10;

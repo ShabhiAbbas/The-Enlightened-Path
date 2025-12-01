@@ -8,31 +8,41 @@
 #include <random>
 #include <unordered_map>
 
+
+
 Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlightened Path"), currentState(WELCOME), maze(nullptr), player(nullptr), currentRiddleIndex(-1), elapsedTime(0), playerDeadThisFrame(false), previousState(WELCOME) {
     window.setFramerateLimit(60);
 
-    // 1. Load Welcome Background
+ 
     if(welcomeTexture.loadFromFile("Images/welcome.jpg")) {
         welcomeSprite.setTexture(welcomeTexture);
         sf::Vector2u size = welcomeTexture.getSize();
         welcomeSprite.setScale(1000.0f / size.x, 700.0f / size.y);
     } else {
-        std::cout << "Warning: welcome.png not found.\n";
+        std::cout << "Warning: welcome.jpg not found (check Images folder).\n";
     }
 
-    // 2. NEW: Load Game Over Background
+ 
     if(gameOverTexture.loadFromFile("Images/gameover.jpg")) {
         gameOverSprite.setTexture(gameOverTexture);
         sf::Vector2u size = gameOverTexture.getSize();
         gameOverSprite.setScale(1000.0f / size.x, 700.0f / size.y);
     } else {
-        std::cout << "Warning: gameover.jpg not found.\n";
+        std::cout << "Warning: gameover.jpg not found (check Images folder).\n";
     }
 
-    // 3. Initialize Name
+ 
+    if (!bgMusic.openFromFile("haunted.wav")) {
+        std::cout << "Error: Could not load haunted.wav" << std::endl;
+    } else {
+        bgMusic.setLoop(true); 
+        bgMusic.setVolume(50);  
+        bgMusic.play(); 
+    }
+  
     playerName = "";
 
-    // 4. Load Fonts
+ 
     const char* fontCandidates[] = {
         "./fonts/arial.ttf",
         "./fonts/DejaVuSans.ttf",
@@ -198,7 +208,7 @@ void Game::checkEnemyCollisions() {
                     e->takeDamage(10.0f);
                 } else if(!player->getIsInvisible()) {
                     player->takeDamage(1.0f);
-                    // NEW: Kill the enemy that hit you and respawn it randomly
+                
                     e->takeDamage(10.0f);
                     int newX, newY;
                     int attempts = 0;
@@ -239,7 +249,7 @@ void Game::checkBulletCollisions() {
 
 void Game::loadScores() {
     leaderboard.clear();
-    // Read leaderboard and keep only the best (lowest) time per player
+
     std::ifstream file("leaderboard.txt");
     if(file.is_open()) {
         std::string name;
@@ -264,12 +274,12 @@ void Game::saveScores() {
 }
 
 void Game::addScore(const std::string& name, float time) {
-    // If the player already exists, keep the best (lowest) time only
+
     bool updated = false;
     for(auto &e : leaderboard) {
         if(e.name == name) {
             if(time < e.time) {
-                e.time = time; // improve existing score
+                e.time = time;
             }
             updated = true;
             break;
@@ -409,8 +419,8 @@ void Game::showRiddleBox() {
             rewardText << "Reward: Invisibility";
 
         } else if (rt == KILL_POWER_REWARD) {
-            rewardText << "Reward: Kill Power + "
-                       << GameConstants::KILL_POWER_AMMO_REWARD
+            rewardText << "Reward: Kill Power + " 
+                       << GameConstants::KILL_POWER_AMMO_REWARD 
                        << " Ammo";
 
         } else if (rt == HEALTH_REWARD) {
@@ -535,7 +545,6 @@ void Game::showVictoryScreen() {
 }
 
 void Game::showGameOverScreen() {
-    // NEW: Draw Background
     window.draw(gameOverSprite);
 
     sf::Text instructions("Press SPACE to try again\nPress ESC to exit", gameFont, 20); 
@@ -557,23 +566,19 @@ void Game::handleInput() {
     sf::Event event;
     while(window.pollEvent(event)) {
         if(event.type == sf::Event::Closed) window.close();
-        
-        // --- Key Pressed Events ---
         if(event.type == sf::Event::KeyPressed) {
-            
-            // 1. WELCOME SCREEN
+      
             if(currentState == WELCOME) {
                 if(event.key.code == sf::Keyboard::Enter && !playerName.empty()) {
                     startNewGame();
                 }
                 else if(event.key.code == sf::Keyboard::Tab) currentState = LEADERBOARD_VIEW;
                 else if(event.key.code == sf::Keyboard::Escape) window.close();
-            
-            // 2. LEADERBOARD SCREEN
+         
             } else if(currentState == LEADERBOARD_VIEW) {
                 if(event.key.code == sf::Keyboard::Escape) currentState = WELCOME;
             
-            // 3. PLAYING GAME
+         
             } else if(currentState == PLAYING) {
                 int moveX = 0, moveY = 0;
                 if(event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up) moveY = -1;
@@ -590,7 +595,7 @@ void Game::handleInput() {
                         checkForRiddle(); 
                         bool reachedExit = (player->getCellX() == maze->getFinishX() && player->getCellY() == maze->getFinishY()); 
                         
-                        // WIN CONDITION
+                    
                         if(reachedExit) { 
                             currentState = VICTORY; 
                             addScore(playerName, elapsedTime); 
@@ -598,7 +603,6 @@ void Game::handleInput() {
                     }
                 }
             
-            // 4. RIDDLE ACTIVE
             } else if(currentState == RIDDLE_ACTIVE) {
                 if(event.key.code == sf::Keyboard::Escape) currentState = PLAYING;
                 else if(event.key.code == sf::Keyboard::Enter) {
@@ -609,23 +613,18 @@ void Game::handleInput() {
                     if(validIndex && correctAnswer) { 
                         riddles[currentRiddleIndex]->setSolved(true);
                         
-                        // Apply riddle reward to player. Keep cases small and
-                        // explicit so behavior is clear.
-                        RiddleRewardType rewardType =
-                            riddles[currentRiddleIndex]->getRewardType();
+                        RiddleRewardType rewardType =riddles[currentRiddleIndex]->getRewardType();
 
                         if (rewardType == VISION_REWARD) {
                             player->increaseVision(
                                 riddles[currentRiddleIndex]->getReward());
 
                         } else if (rewardType == INVISIBILITY_REWARD) {
-                            // Grant temporary invisibility (duration governed
-                            // by GameConstants::INVISIBILITY_DURATION).
+                        
                             player->setInvisible(true);
 
                         } else if (rewardType == KILL_POWER_REWARD) {
-                            // Give kill power and ammo. Ammo amount is a named
-                            // constant to avoid scattering magic numbers.
+                         
                             player->setCanKillEnemies(true);
                             player->addAmmo(
                                 GameConstants::KILL_POWER_AMMO_REWARD);
@@ -639,24 +638,21 @@ void Game::handleInput() {
                     }
                     playerAnswer.clear();
                 } else if(event.key.code == sf::Keyboard::Backspace && !playerAnswer.empty()) playerAnswer.pop_back();
-            
-            // 5. VICTORY / GAME OVER
+        
             } else if(currentState == VICTORY || currentState == GAME_OVER) {
                 if(event.key.code == sf::Keyboard::Space) startNewGame();
                 else if(event.key.code == sf::Keyboard::Escape) currentState = WELCOME;
             }
         }
-        
-        // --- Text Entry Events ---
+    
         if(event.type == sf::Event::TextEntered) {
-            // Logic for Riddle Input
+          
             if (currentState == RIDDLE_ACTIVE) {
                 bool isPrintable = (event.text.unicode < 128 && event.text.unicode >= 32);
                 bool notTooLong = (playerAnswer.length() < 30);
                 if(isPrintable && notTooLong) playerAnswer += static_cast<char>(event.text.unicode);
                 else if (event.text.unicode == 8 && !playerAnswer.empty()) playerAnswer.pop_back(); // Backspace
             }
-            // Logic for Welcome Screen Name Input
             else if (currentState == WELCOME) {
                 bool isPrintable = (event.text.unicode < 128 && event.text.unicode >= 32);
                 bool notTooLong = (playerName.length() < 15); 
@@ -689,9 +685,7 @@ void Game::updateGame() {
         updateEnemies();
         checkEnemyCollisions();
         checkBulletCollisions();
-        
-        // FIXED: Immediately trigger Game Over if health is 0.
-        // Removed the respawn/deathCount logic that was resetting health.
+    
         if(player->getHealth() <= 0) {
             currentState = GAME_OVER;
         }
