@@ -10,16 +10,6 @@ This is a simple maze game written in C++ using SFML. A maze is generated with a
 - SFML (graphics, window, system)
 - A TrueType font (`.ttf`) placed in `./fonts/` (recommended)
 
-## Quick build (MinGW / g++)
-
-Open PowerShell in the project folder and run (adjust SFML paths for your system):
-
-```powershell
-cd "c:\Users\hijaz tr\OneDrive\Documents\GitHub\The-Enlightened-Path"
-g++ -std=c++17 -I"C:\SFML\include" src/main.cpp src/Game.cpp src/Maze.cpp src/Player.cpp src/Riddle.cpp src/GameObject.cpp src/Cell.cpp src/Enemy.cpp -L"C:\SFML\lib" -lsfml-graphics -lsfml-window -lsfml-system -o only_maze.exe
-# Copy needed SFML DLLs from C:\SFML\bin to the executable folder when using dynamic linking.
-```
-
 ## Using Visual Studio (MSVC)
 
 - Create an empty project and add the `.cpp` and `.h` files from the `src/` folder.
