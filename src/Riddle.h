@@ -5,7 +5,7 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 
-// Riddle reward types
+
 enum RiddleRewardType { VISION_REWARD, INVISIBILITY_REWARD, KILL_POWER_REWARD, HEALTH_REWARD };
 
 class Riddle : public GameObject {
@@ -44,4 +44,4 @@ protected:
     virtual sf::Color getMarkerColor() const override;
 };
 
-#endif // RIDDLE_H
+#endif 

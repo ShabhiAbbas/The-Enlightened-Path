@@ -27,4 +27,4 @@ public:
     int getDirection() const;
 };
 
-#endif // GAMEOBJECT_H
+#endif 

@@ -1,11 +1,11 @@
 #include "Player.h"
+#include "Maze.h"
 #include <algorithm>
+#include <cmath>
 
-Player::Player(int startX, int startY, int cellSize_, float visionRadius_) 
-    : MovableEntity(startX, startY), cellSize(cellSize_), visionRadius(visionRadius_), 
+Player::Player(int startX, int startY, int cellSize_, float visionRadius_): MovableEntity(startX, startY), cellSize(cellSize_), visionRadius(visionRadius_), 
     health(3.0f), maxHealth(3.0f), isInvisible(false), canKillEnemies(false), 
     deathCount(0), initialX(startX), initialY(startY), ammo(0) {
-        // Initialize timer so we can take damage immediately
         damageCooldown.restart(); 
     }
 
@@ -17,21 +17,22 @@ int Player::getCellY() const { return static_cast<int>(y); }
 float Player::getVisionRadius() const { return visionRadius; }
 float Player::getHealth() const { return health; }
 float Player::getMaxHealth() const { return maxHealth; }
+
 bool Player::getIsInvisible() const { 
-    // If invisibility was never granted, quick return
-    if (!isInvisible) {
-        return false;
+    if (!isInvisible) return false;
+    if (invisibilityTimer.getElapsedTime().asSeconds() > GameConstants::INVISIBILITY_DURATION) {
+        return false; 
     }
-
-    // Check if invisibility duration has expired.
-    // Use named constant to avoid magic numbers.
-    if (invisibilityClock.getElapsedTime().asSeconds() >
-        GameConstants::INVISIBILITY_DURATION) {
-        return false;
-    }
-
-    return true;
+    return true; 
 }
+
+void Player::setInvisible(bool inv) { 
+    isInvisible = inv;
+    if (inv) {
+        invisibilityTimer.restart();
+    }
+}
+
 bool Player::getCanKillEnemies() const { return canKillEnemies; }
 int Player::getDeathCount() const { return deathCount; }
 int Player::getAmmo() const { return ammo; }
@@ -62,11 +63,49 @@ void Player::fire() {
     ammo--;
 }
 
-void Player::updateBullets(int mazeCols, int mazeRows) {
+
+void Player::updateBullets(int mazeCols, int mazeRows, const Maze* maze) {
     for(auto& bullet : bullets) {
         if(!bullet.active) continue;
-        bullet.x += bullet.dirX * bullet.speed;
-        bullet.y += bullet.dirY * bullet.speed;
+        int cx = static_cast<int>(std::round(bullet.x));
+        int cy = static_cast<int>(std::round(bullet.y));
+
+        if (maze && !maze->canMove(cx, cy, bullet.dirX, bullet.dirY)) {
+            float nextX = bullet.x + bullet.dirX * bullet.speed;
+            float nextY = bullet.y + bullet.dirY * bullet.speed;
+            
+            int nextCx = static_cast<int>(std::round(nextX));
+            int nextCy = static_cast<int>(std::round(nextY));
+            
+            if (nextCx != cx || nextCy != cy) {
+                if (!maze->canMove(cx, cy, nextCx - cx, nextCy - cy)){
+                    bullet.active = false;
+                    continue;
+                }
+            }
+            
+            bullet.x = nextX;
+            bullet.y = nextY;
+        } else {
+
+            float nextX = bullet.x + bullet.dirX * bullet.speed;
+            float nextY = bullet.y + bullet.dirY * bullet.speed;
+            
+            int cx = static_cast<int>(std::round(bullet.x));
+            int cy = static_cast<int>(std::round(bullet.y));
+            int nextCx = static_cast<int>(std::round(nextX));
+            int nextCy = static_cast<int>(std::round(nextY));
+
+            if (nextCx != cx || nextCy != cy) {
+                if (maze && !maze->canMove(cx, cy, nextCx - cx, nextCy - cy)) {
+                    bullet.active = false; 
+                    continue;
+                }
+            }
+            bullet.x = nextX;
+            bullet.y = nextY;
+        }
+
         if(bullet.x < 0 || bullet.x >= mazeCols || bullet.y < 0 || bullet.y >= mazeRows) {
             bullet.active = false;
         }
@@ -75,16 +114,11 @@ void Player::updateBullets(int mazeCols, int mazeRows) {
 }
 
 void Player::takeDamage(float amount) {
-    // Check cooldown (1 second invulnerability)
     if(damageCooldown.getElapsedTime().asSeconds() < 1.0f) return;
-
     health -= amount;
-    damageCooldown.restart(); // Reset timer
-    
-    // NEW: Reset position to start when hit
+    damageCooldown.restart(); 
     x = static_cast<float>(initialX);
     y = static_cast<float>(initialY);
-    
     if(health < 0) health = 0;
 }
 
@@ -99,10 +133,6 @@ void Player::respawn() {
     damageCooldown.restart();
 }
 
-void Player::setInvisible(bool inv) { 
-    isInvisible = inv;
-    if(inv) invisibilityClock.restart();
-}
 void Player::setCanKillEnemies(bool canKill) { canKillEnemies = canKill; }
 void Player::move(int dx, int dy) { MovableEntity::move(dx, dy); }
 bool Player::isInVision(int cellX, int cellY) const { 
@@ -119,20 +149,12 @@ void Player::draw(sf::RenderWindow& window) const {
     playerCircle.setOrigin(cellSize / 3, cellSize / 3);
     playerCircle.setPosition(px, py);
     
-    // Color logic based on Health / invisibility state.
-    // Use the public getter so visual state matches actual invisibility
-    // duration (it may have expired even if `isInvisible` flag is true).
-    if (getIsInvisible()) {
-        // Semi-transparent blue when invisible
+    if(getIsInvisible()) {
         playerCircle.setFillColor(sf::Color(100, 100, 255, 150));
     } else {
-        if(health > 2.0f) {
-            playerCircle.setFillColor(sf::Color(100, 255, 100));  // Green (Happy)
-        } else if(health > 1.0f) {
-            playerCircle.setFillColor(sf::Color(255, 255, 100));  // Yellow (Frown)
-        } else {
-            playerCircle.setFillColor(sf::Color(255, 100, 100));  // Red (Sad)
-        }
+        if(health > 2.0f) playerCircle.setFillColor(sf::Color(100, 255, 100));
+        else if(health > 1.0f) playerCircle.setFillColor(sf::Color(255, 255, 100));
+        else playerCircle.setFillColor(sf::Color(255, 100, 100));
     }
     
     window.draw(playerCircle);
@@ -144,9 +166,7 @@ void Player::draw(sf::RenderWindow& window) const {
     eye.setPosition(px + cellSize / 6, py - cellSize / 6);
     window.draw(eye);
     
-    // Mouth Logic
     if(health > 2.0f) {
-        // Happy: Smile (U shape)
         sf::VertexArray smile(sf::LinesStrip, 4);
         smile[0].position = sf::Vector2f(px - cellSize/6, py + cellSize/8);
         smile[1].position = sf::Vector2f(px - cellSize/6, py + cellSize/4);
@@ -155,13 +175,11 @@ void Player::draw(sf::RenderWindow& window) const {
         for(int i=0; i<4; ++i) smile[i].color = sf::Color::Black;
         window.draw(smile);
     } else if(health > 1.0f) {
-        // Frown/Normal: Straight line
         sf::RectangleShape mouth(sf::Vector2f(cellSize / 3, 2));
         mouth.setPosition(px - cellSize / 6, py + cellSize / 6);
         mouth.setFillColor(sf::Color(0, 0, 0));
         window.draw(mouth);
     } else {
-        // Sad: Inverted U
         sf::VertexArray frown(sf::LinesStrip, 4);
         frown[0].position = sf::Vector2f(px - cellSize/6, py + cellSize/4);
         frown[1].position = sf::Vector2f(px - cellSize/6, py + cellSize/8);

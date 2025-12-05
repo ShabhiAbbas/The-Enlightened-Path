@@ -39,4 +39,4 @@ public:
     void drawWithVision(sf::RenderWindow& window, const Player& player);
 };
 
-#endif // MAZE_H
+#endif

@@ -1,24 +1,19 @@
 #include "Maze.h"
 #include <cstdlib>
 
-// Maze implementation
-// This file contains the grid of Cell objects and the recursive backtracker
-// maze generator implemented as repeated `step()` calls. The generator
-// removes walls between neighboring cells to create a perfect maze.
 
 Maze::Maze(int cols_, int rows_, int cellSize_) : cols(cols_), rows(rows_), cellSize(cellSize_), generating(true), startX(0), startY(0), finishX(cols_ - 1), finishY(rows_ - 1) {
-    // Randomize endpoint location: choose from top-right, bottom-left, or bottom-right
     int cornerChoice = rand() % 3;
     if(cornerChoice == 0) {
-        // Top-right
+ 
         finishX = cols_ - 1;
         finishY = 0;
     } else if(cornerChoice == 1) {
-        // Bottom-left
+  
         finishX = 0;
         finishY = rows_ - 1;
     } else {
-        // Bottom-right (default)
+  
         finishX = cols_ - 1;
         finishY = rows_ - 1;
     }
@@ -55,30 +50,26 @@ Cell* Maze::getUnvisitedNeighbor(Cell* cell) {
     if(left && !left->isVisited()) { neighbors.push_back(left); directions.push_back(3); }
     if(neighbors.empty()) return nullptr;
 
-    // Randomly choose one neighbor, remove the wall between current and chosen
+
     int idx = rand() % neighbors.size();
     int dir = directions[idx];
     current->removeWall(dir);
-    neighbors[idx]->removeWall((dir + 2) % 4); // remove opposite wall on neighbor
+    neighbors[idx]->removeWall((dir + 2) % 4); 
     return neighbors[idx];
 }
 
 void Maze::step() {
-    // Advance the generator by one step. This is called repeatedly while
-    // the game is in the GENERATING state so the UI can show progress.
+
     if(!generating) return;
     Cell* next = getUnvisitedNeighbor(current);
     if(next) {
-        // Move to neighbor: mark visited and push previous cell on stack
         next->setVisited(true);
         stack.push(current);
         current = next;
     } else if(!stack.empty()) {
-        // Backtrack: pop previous cell
         current = stack.top();
         stack.pop();
     } else {
-        // Completed generation
         generating = false;
     }
 }

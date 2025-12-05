@@ -9,11 +9,9 @@
 #include <unordered_map>
 
 
-
 Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlightened Path"), currentState(WELCOME), maze(nullptr), player(nullptr), currentRiddleIndex(-1), elapsedTime(0), playerDeadThisFrame(false), previousState(WELCOME) {
     window.setFramerateLimit(60);
 
- 
     if(welcomeTexture.loadFromFile("Images/welcome.jpg")) {
         welcomeSprite.setTexture(welcomeTexture);
         sf::Vector2u size = welcomeTexture.getSize();
@@ -21,8 +19,6 @@ Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlighten
     } else {
         std::cout << "Warning: welcome.jpg not found (check Images folder).\n";
     }
-
- 
     if(gameOverTexture.loadFromFile("Images/gameover.jpg")) {
         gameOverSprite.setTexture(gameOverTexture);
         sf::Vector2u size = gameOverTexture.getSize();
@@ -31,18 +27,17 @@ Game::Game() : window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Enlighten
         std::cout << "Warning: gameover.jpg not found (check Images folder).\n";
     }
 
- 
     if (!bgMusic.openFromFile("haunted.wav")) {
         std::cout << "Error: Could not load haunted.wav" << std::endl;
     } else {
         bgMusic.setLoop(true); 
-        bgMusic.setVolume(50);  
-        bgMusic.play(); 
+        bgMusic.setVolume(50);   
+        bgMusic.play();         
     }
-  
+
+
     playerName = "";
 
- 
     const char* fontCandidates[] = {
         "./fonts/arial.ttf",
         "./fonts/DejaVuSans.ttf",
@@ -203,21 +198,9 @@ void Game::checkEnemyCollisions() {
             int ex = static_cast<int>(e->getX());
             int ey = static_cast<int>(e->getY());
             
-            if(px == ex && py == ey) {
-                if(player->getCanKillEnemies()) {
-                    e->takeDamage(10.0f);
-                } else if(!player->getIsInvisible()) {
+            if(px == ex && py == ey){
+                if(!player->getIsInvisible()) {
                     player->takeDamage(1.0f);
-                
-                    e->takeDamage(10.0f);
-                    int newX, newY;
-                    int attempts = 0;
-                    do {
-                        newX = rand() % COLS;
-                        newY = rand() % ROWS;
-                        ++attempts;
-                    } while((newX == maze->getFinishX() && newY == maze->getFinishY()) && attempts < 100);
-                    e->setPosition(static_cast<float>(newX), static_cast<float>(newY));
                 }
             }
         }
@@ -249,7 +232,6 @@ void Game::checkBulletCollisions() {
 
 void Game::loadScores() {
     leaderboard.clear();
-
     std::ifstream file("leaderboard.txt");
     if(file.is_open()) {
         std::string name;
@@ -274,7 +256,6 @@ void Game::saveScores() {
 }
 
 void Game::addScore(const std::string& name, float time) {
-
     bool updated = false;
     for(auto &e : leaderboard) {
         if(e.name == name) {
@@ -419,13 +400,10 @@ void Game::showRiddleBox() {
             rewardText << "Reward: Invisibility";
 
         } else if (rt == KILL_POWER_REWARD) {
-            rewardText << "Reward: Kill Power + " 
-                       << GameConstants::KILL_POWER_AMMO_REWARD 
-                       << " Ammo";
+            rewardText << "Reward: Kill Power + 6 Ammo";
 
         } else if (rt == HEALTH_REWARD) {
-            rewardText << "Reward: +" << activeRiddle->getReward()
-                       << " health";
+            rewardText << "Reward: +" << activeRiddle->getReward()<< " health";
         }
         sf::Text reward(rewardText.str(), gameFont, 14); 
         reward.setPosition(40, MAZE_HEIGHT + 60); 
@@ -567,18 +545,16 @@ void Game::handleInput() {
     while(window.pollEvent(event)) {
         if(event.type == sf::Event::Closed) window.close();
         if(event.type == sf::Event::KeyPressed) {
-      
             if(currentState == WELCOME) {
                 if(event.key.code == sf::Keyboard::Enter && !playerName.empty()) {
                     startNewGame();
                 }
                 else if(event.key.code == sf::Keyboard::Tab) currentState = LEADERBOARD_VIEW;
                 else if(event.key.code == sf::Keyboard::Escape) window.close();
-         
+
             } else if(currentState == LEADERBOARD_VIEW) {
                 if(event.key.code == sf::Keyboard::Escape) currentState = WELCOME;
-            
-         
+
             } else if(currentState == PLAYING) {
                 int moveX = 0, moveY = 0;
                 if(event.key.code == sf::Keyboard::W || event.key.code == sf::Keyboard::Up) moveY = -1;
@@ -594,15 +570,14 @@ void Game::handleInput() {
                         player->move(moveX, moveY); 
                         checkForRiddle(); 
                         bool reachedExit = (player->getCellX() == maze->getFinishX() && player->getCellY() == maze->getFinishY()); 
-                        
-                    
+      
                         if(reachedExit) { 
                             currentState = VICTORY; 
                             addScore(playerName, elapsedTime); 
                         }
                     }
                 }
-            
+    
             } else if(currentState == RIDDLE_ACTIVE) {
                 if(event.key.code == sf::Keyboard::Escape) currentState = PLAYING;
                 else if(event.key.code == sf::Keyboard::Enter) {
@@ -612,22 +587,20 @@ void Game::handleInput() {
                     bool correctAnswer = validIndex && (answer == riddles[currentRiddleIndex]->getAnswer());
                     if(validIndex && correctAnswer) { 
                         riddles[currentRiddleIndex]->setSolved(true);
-                        
-                        RiddleRewardType rewardType =riddles[currentRiddleIndex]->getRewardType();
+            
+                        RiddleRewardType rewardType =
+                            riddles[currentRiddleIndex]->getRewardType();
 
                         if (rewardType == VISION_REWARD) {
                             player->increaseVision(
                                 riddles[currentRiddleIndex]->getReward());
 
                         } else if (rewardType == INVISIBILITY_REWARD) {
-                        
                             player->setInvisible(true);
 
                         } else if (rewardType == KILL_POWER_REWARD) {
-                         
                             player->setCanKillEnemies(true);
-                            player->addAmmo(
-                                GameConstants::KILL_POWER_AMMO_REWARD);
+                            player->addAmmo(6);
 
                         } else if (rewardType == HEALTH_REWARD) {
                             player->increaseHealth(
@@ -638,21 +611,22 @@ void Game::handleInput() {
                     }
                     playerAnswer.clear();
                 } else if(event.key.code == sf::Keyboard::Backspace && !playerAnswer.empty()) playerAnswer.pop_back();
-        
+
             } else if(currentState == VICTORY || currentState == GAME_OVER) {
                 if(event.key.code == sf::Keyboard::Space) startNewGame();
                 else if(event.key.code == sf::Keyboard::Escape) currentState = WELCOME;
             }
         }
-    
+
         if(event.type == sf::Event::TextEntered) {
-          
+
             if (currentState == RIDDLE_ACTIVE) {
                 bool isPrintable = (event.text.unicode < 128 && event.text.unicode >= 32);
                 bool notTooLong = (playerAnswer.length() < 30);
                 if(isPrintable && notTooLong) playerAnswer += static_cast<char>(event.text.unicode);
-                else if (event.text.unicode == 8 && !playerAnswer.empty()) playerAnswer.pop_back(); // Backspace
+                else if (event.text.unicode == 8 && !playerAnswer.empty()) playerAnswer.pop_back();
             }
+
             else if (currentState == WELCOME) {
                 bool isPrintable = (event.text.unicode < 128 && event.text.unicode >= 32);
                 bool notTooLong = (playerName.length() < 15); 
@@ -681,11 +655,12 @@ void Game::updateGame() {
     }
     if(currentState == PLAYING) {
         elapsedTime = timer.getElapsedTime().asSeconds();
-        player->updateBullets(COLS, ROWS);
+        player->updateBullets(COLS, ROWS, maze);
+        
         updateEnemies();
         checkEnemyCollisions();
         checkBulletCollisions();
-    
+        
         if(player->getHealth() <= 0) {
             currentState = GAME_OVER;
         }

@@ -25,4 +25,4 @@ public:
     void draw(sf::RenderWindow& window, int cellSize, bool isStart = false, bool isFinish = false) const;
 };
 
-#endif // CELL_H
+#endif 

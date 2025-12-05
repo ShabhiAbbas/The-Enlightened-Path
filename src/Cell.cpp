@@ -1,8 +1,8 @@
 #include "Cell.h"
 
 
-Cell::Cell() : x(0), y(0), visited(false) { for(int i = 0; i < 4; ++i) walls[i] = true; }
-Cell::Cell(int x_, int y_) : x(x_), y(y_), visited(false) { for(int i = 0; i < 4; ++i) walls[i] = true; }
+Cell::Cell() : x(0), y(0), visited(false) { for(int i = 0; i < 4; ++i) walls[i] = true;}
+Cell::Cell(int x_, int y_) : x(x_), y(y_), visited(false) { for(int i = 0; i < 4; ++i) walls[i] = true;}
 
 void Cell::draw(sf::RenderWindow& window, int cellSize, bool isStart, bool isFinish) const {
     int px = x * cellSize;
