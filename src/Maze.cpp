@@ -44,10 +44,22 @@ Cell* Maze::getUnvisitedNeighbor(Cell* cell) {
     Cell* right = getCell(x + 1, y);
     Cell* bottom = getCell(x, y + 1);
     Cell* left = getCell(x - 1, y);
-    if(top && !top->isVisited()) { neighbors.push_back(top); directions.push_back(0); }
-    if(right && !right->isVisited()) { neighbors.push_back(right); directions.push_back(1); }
-    if(bottom && !bottom->isVisited()) { neighbors.push_back(bottom); directions.push_back(2); }
-    if(left && !left->isVisited()) { neighbors.push_back(left); directions.push_back(3); }
+    if(top && !top->isVisited()) { 
+        neighbors.push_back(top); 
+        directions.push_back(0); 
+    }
+    if(right && !right->isVisited()) { 
+        neighbors.push_back(right); 
+        directions.push_back(1); 
+    }
+    if(bottom && !bottom->isVisited()) { 
+        neighbors.push_back(bottom); 
+        directions.push_back(2); 
+    }
+    if(left && !left->isVisited()) { 
+        neighbors.push_back(left); 
+        directions.push_back(3); 
+    }
     if(neighbors.empty()) return nullptr;
 
 

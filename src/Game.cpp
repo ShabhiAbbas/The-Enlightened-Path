@@ -686,6 +686,7 @@ void Game::draw() {
         
         showRiddleMarkers();
         player->draw(window);
+        player->drawAimArrow(window, CELL_SIZE);
         
         float visionSize = player->getVisionRadius() * CELL_SIZE;
         sf::CircleShape visionCircle(visionSize); 

@@ -4,7 +4,7 @@
 I follow you silently and vanish in light, what am I?|shadow|0|VISION_REWARD
 The more of me you take, the darker your path becomes. What am I?|darkness|0|INVISIBILITY_REWARD
 I can creep without legs, whisper without voice, and vanish when caught. What am I?|wind|1|VISION_REWARD
-I am always hungry, I must always be fed, the finger I touch will soon turn red. What am I?|fire|1|KILL_POWER_REWARD
+I am always hungry, I must always be fed, the finger I touch will soon turn red. What am I?|fire|1|VISION_REWARD
 The more you have of me, the less you see. What am I?|fog|1|INVISIBILITY_REWARD
 I am not alive, but I can grow; I don't have lungs, but I need air; I don't have a mouth, and I can drown. What am I?|fire|2|KILL_POWER_REWARD
 I appear in the night sky but vanish in the day, I can guide lost souls on their way. What am I?|star|0|VISION_REWARD
@@ -12,7 +12,7 @@ I can be cracked, made, told, and played. What am I?|joke|0|INVISIBILITY_REWARD
 I have a heart that doesn't beat, a face without features, and a soul that roams. What am I?|statue|2|KILL_POWER_REWARD
 I never speak, but I reveal secrets in shadows. What am I?|mirror|1|INVISIBILITY_REWARD
 You can't see me, but I follow your every step; I only disappear in the dark. What am I?|shadow|0|VISION_REWARD
-I enter your home unseen, linger, and leave only when you call me by name. What am I?|ghost|2|KILL_POWER_REWARD
+I enter your home unseen, linger, and leave only when you call me by name. What am I?|ghost|2|VISION_REWARD
 I am light as a feather, yet the strongest man cannot hold me for long. What am I?|breath|1|INVISIBILITY_REWARD
 I have one eye but cannot see, I am feared by sailors on stormy seas. What am I?|needle|2|KILL_POWER_REWARD
 I am always in front of you, but can never be seen. What am I?|future|2|VISION_REWARD

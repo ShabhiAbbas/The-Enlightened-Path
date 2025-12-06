@@ -68,6 +68,7 @@ public:
     
     virtual void move(int dx, int dy) override;
     bool isInVision(int cellX, int cellY) const;
+    void drawAimArrow(sf::RenderWindow& window, int cellSize) const;
     virtual void draw(sf::RenderWindow& window) const override;
 };
 

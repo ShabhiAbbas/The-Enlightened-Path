@@ -141,6 +141,46 @@ bool Player::isInVision(int cellX, int cellY) const {
     return (dx*dx + dy*dy) <= (visionRadius * visionRadius); 
 }
 
+void Player::drawAimArrow(sf::RenderWindow& window, int cellSize) const {
+    if(ammo <= 0) return;
+    
+    float px = x * cellSize + cellSize / 2;
+    float py = y * cellSize + cellSize / 2;
+    
+    // Calculate arrow direction based on current facing direction
+    float arrowLength = cellSize * 2.5f;
+    float dx = 0, dy = 0;
+    
+    if(direction == 0) dy = -arrowLength;       // Up
+    else if(direction == 1) dx = arrowLength;   // Right
+    else if(direction == 2) dy = arrowLength;   // Down
+    else if(direction == 3) dx = -arrowLength;  // Left
+    
+    // Draw arrow line
+    sf::Vertex arrowLine[] = {
+        sf::Vertex(sf::Vector2f(px, py), sf::Color(255, 100, 100)),
+        sf::Vertex(sf::Vector2f(px + dx, py + dy), sf::Color(255, 100, 100))
+    };
+    window.draw(arrowLine, 2, sf::Lines);
+    
+    // Draw arrow head (triangle)
+    float arrowHeadSize = cellSize * 0.4f;
+    float perpX = -dy / arrowLength * arrowHeadSize;
+    float perpY = dx / arrowLength * arrowHeadSize;
+    
+    sf::Vector2f tipPos(px + dx, py + dy);
+    sf::Vector2f leftBase(px + dx - dx * 0.2f - perpX, py + dy - dy * 0.2f - perpY);
+    sf::Vector2f rightBase(px + dx - dx * 0.2f + perpX, py + dy - dy * 0.2f + perpY);
+    
+    sf::Vertex arrowHead[] = {
+        sf::Vertex(tipPos, sf::Color(255, 100, 100)),
+        sf::Vertex(leftBase, sf::Color(255, 100, 100)),
+        sf::Vertex(rightBase, sf::Color(255, 100, 100)),
+        sf::Vertex(tipPos, sf::Color(255, 100, 100))
+    };
+    window.draw(arrowHead, 4, sf::LineStrip);
+}
+
 void Player::draw(sf::RenderWindow& window) const {
     float px = x * cellSize + cellSize / 2;
     float py = y * cellSize + cellSize / 2;

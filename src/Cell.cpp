@@ -17,8 +17,28 @@ void Cell::draw(sf::RenderWindow& window, int cellSize, bool isStart, bool isFin
     }
 
     sf::Color wallColor(200, 200, 220);
-    if (walls[0]) { sf::RectangleShape wall(sf::Vector2f(cellSize, 2)); wall.setPosition(px, py); wall.setFillColor(wallColor); window.draw(wall); }
-    if (walls[1]) { sf::RectangleShape wall(sf::Vector2f(2, cellSize)); wall.setPosition(px + cellSize, py); wall.setFillColor(wallColor); window.draw(wall); }
-    if (walls[2]) { sf::RectangleShape wall(sf::Vector2f(cellSize, 2)); wall.setPosition(px, py + cellSize); wall.setFillColor(wallColor); window.draw(wall); }
-    if (walls[3]) { sf::RectangleShape wall(sf::Vector2f(2, cellSize)); wall.setPosition(px, py); wall.setFillColor(wallColor); window.draw(wall); }
+    if (walls[0]) { 
+        sf::RectangleShape wall(sf::Vector2f(cellSize, 2)); 
+        wall.setPosition(px, py); 
+        wall.setFillColor(wallColor); 
+        window.draw(wall); 
+    }
+    if (walls[1]) { 
+        sf::RectangleShape wall(sf::Vector2f(2, cellSize)); 
+        wall.setPosition(px + cellSize, py); 
+        wall.setFillColor(wallColor); 
+        window.draw(wall);
+    }
+    if (walls[2]) { 
+        sf::RectangleShape wall(sf::Vector2f(cellSize, 2)); 
+        wall.setPosition(px, py + cellSize); 
+        wall.setFillColor(wallColor); 
+        window.draw(wall); 
+    }
+    if (walls[3]) { 
+        sf::RectangleShape wall(sf::Vector2f(2, cellSize)); 
+        wall.setPosition(px, py); 
+        wall.setFillColor(wallColor); 
+        window.draw(wall); 
+    }
 }

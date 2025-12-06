@@ -10,22 +10,54 @@ This is a simple maze game written in C++ using SFML. A maze is generated with a
 - SFML (graphics, window, system)
 - A TrueType font (`.ttf`) placed in `./fonts/` (recommended)
 
-## Using Visual Studio (MSVC)
+## Compilation & Running
 
-- Create an empty project and add the `.cpp` and `.h` files from the `src/` folder.
-- Configure include / library directories for SFML (or use `vcpkg` to install SFML).
-- Link `sfml-graphics.lib`, `sfml-window.lib`, `sfml-system.lib` (or their static equivalents).
+### Using Visual Studio (MSVC)
 
-## Run
+1. Create an empty project and add all `.cpp` and `.h` files from the `src/` folder.
+2. Configure include and library directories for SFML (or use `vcpkg` to install SFML):
+   ```
+   vcpkg install sfml:x64-windows
+   ```
+3. Link the following libraries:
+   - `sfml-graphics.lib`
+   - `sfml-window.lib`
+   - `sfml-system.lib`
+   - `sfml-audio.lib` (for music support)
+4. Build the project (press `F7` or use **Build > Build Solution**).
+5. Run the executable: `./The-Enlightened-Path.exe` from PowerShell in the project directory.
 
-- Ensure a TTF font exists in `./fonts/` (e.g. `fonts/DejaVuSans.ttf`). The game tries several locations; adding a `fonts` folder is easiest.
-- Run the produced executable (e.g. `./only_maze.exe`) from PowerShell.
+### Using G++ (MinGW/Linux/Mac)
+
+1. Install SFML development libraries:
+   - **Windows (MSYS2)**: `pacman -S mingw-w64-x86_64-sfml`
+   - **Ubuntu/Debian**: `sudo apt-get install libsfml-dev`
+   - **macOS**: `brew install sfml`
+
+2. Compile from the project root directory:
+   ```bash
+   g++ -std=c++17 -o maze_game src/*.cpp -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+   ```
+
+3. Run the game:
+   ```bash
+   ./maze_game
+   ```
+
+
+
+### Setup & Prerequisites
+
+- Ensure a TTF font exists in `./fonts/` (e.g., `fonts/DejaVuSans.ttf` or `fonts/arial.ttf`). The game searches multiple locations, but having a `fonts` folder is recommended.
+- Place audio file `haunted.wav` in the project root (or modify the path in `src/Game.cpp`).
+- The game auto-generates `riddles.txt` if it doesn't exist.
+- Leaderboard scores are saved to `leaderboard.txt` in the working directory.
 
 ## Controls
 
 - **Move**: `W`/`A`/`S`/`D` or arrow keys
 - **Start/New Game**: `SPACE`
-- **Leaderboard**: `L`
+- **Leaderboard**: `TAB`
 - **Submit riddle answer**: `ENTER` (type while riddle is active)
 - **Close riddle**: `ESC`
 - **Give Up (in-game)**: `G`
